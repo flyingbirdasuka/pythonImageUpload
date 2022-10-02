@@ -1,0 +1,38 @@
+org: flyingbirdasuka
+app: python-image-upload
+service: aws-python-project
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: python3.8
+  region: eu-central-1
+  timeout: 10
+  memorySize: 128
+  environment:
+    THUMBNAIL_SIZE: 128
+    REGION_NAME: ${self:provider.region}
+    BUCKET_NAME: 'image-bucket-asuka'
+  iam:
+      role:
+        statements:
+          - Effect: 'Allow'
+            Resource: '*'
+            Action: 's3:*'
+custom:
+  bucket: image-bucket-asuka
+  dynamoTable: s3-thumbnail-table
+  pythonRequirements:
+    dockerizePip: true
+
+functions:
+  image_upload:
+    handler: handler.image_upload
+    events:
+      - http:
+          path: upload
+          method: post
+          cors: true
+plugins:
+  - serverless-python-requirements
