@@ -1,4 +1,5 @@
 import base64
+import uuid
 import boto3
 import logging
 import os
@@ -20,10 +21,15 @@ def image_upload(event, context):
         image = BytesIO() 
         file_content.save(image, format=file_content.format)
         image.seek(0)
-        response = s3_client.upload_fileobj(image, bucket, file_name)
+        new_filename = create_new_filename(file_name)
+        response = s3_client.upload_fileobj(image, bucket, new_filename)
         
-        url = '{}/{}/{}'.format(s3_client.meta.endpoint_url, bucket, file_name)
+        url = '{}/{}/{}'.format(s3_client.meta.endpoint_url, bucket, new_filename)
         return url
 
     except ClientError as e:
         logging.error(e)
+
+def create_new_filename(file_name):
+    file_name_split = file_name.rsplit('.', 1)
+    return str(uuid.uuid4()) + '_' + file_name_split[0] + ".png"        
